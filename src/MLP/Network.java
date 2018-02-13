@@ -49,18 +49,18 @@ public class Network {
      */
     private void randomiseWeights(){
         Random randDouble = new Random();
-        double wgtRange = 2/input;
+        double wgtRange = (double)2/input;
 
 
         for(int j = 1; j <= hidden; j++){
             for(int i = 1; i <= input; i++){
-                weightsIH[j][i] = randDouble.nextDouble() * wgtRange;
+                weightsIH[j][i] = randDouble.nextDouble() * (wgtRange * 2) - wgtRange; // Will generate random double between -2/n and 2/n for each weight
             }
         }
 
         for(int j = 1; j <= output; j++){
             for(int i = 1; i <= hidden; i++){
-                weightsHO[j][i] = randDouble.nextDouble() * wgtRange;
+                weightsHO[j][i] = randDouble.nextDouble() * (wgtRange * 2) - wgtRange; // Will generate random double between -2/n and 2/n for each weight
             }
         }
     }
