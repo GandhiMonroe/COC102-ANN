@@ -18,7 +18,8 @@ public class Main {
         attributes[3] = 101.0;
         attributes[4] = 81.0;
 
-        double predictand = 0.8;
+        double[] predictand = new double[1];
+        predictand[0] = 0.8;
 
         network.trainNetwork(attributes, predictand);
     }

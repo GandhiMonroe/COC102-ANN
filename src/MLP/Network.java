@@ -69,16 +69,22 @@ public class Network {
      * Then back propogation is performed using the desired predictand supplied.
      *
      * @param attributes The attributes in the data used to train
-     * @param predictand The desired output from the attributes
-     * @return
+     * @param predictands The desired output from the attributes
+     * @return The values for each output node
      */
-    public double[] trainNetwork(double[] attributes, double predictand) {
+    public double[] trainNetwork(double[] attributes, double[] predictands) {
         double[] output = forwardPass(attributes);
-        //backPropogation(predictand);
+        backPropogation(predictands);
 
         return output;
     }
 
+    /**
+     * Perform a forward pass using the attributes provided and produce a value for each output node.
+     *
+     * @param attributes The specified attributes from the data
+     * @return An array containing values for each output node
+     */
     private double[] forwardPass(double[] attributes) {
         for(int i = 0; i < input; i++){
             inputs[i+1] = attributes[i];
@@ -108,5 +114,42 @@ public class Network {
         }
 
         return outputs;
+    }
+
+    /**
+     * Performs back propogation to the network and recalculates the weights for the next pass.
+     *
+     * @param predictands The predicted value according to the attributes
+     */
+    private void backPropogation(double[] predictands) {
+        double[] errorOutput = new double[output+1];
+        double[] errorHidden = new double[hidden+1];
+
+        double errorSum = 0.0;
+
+        for(int i = 1; i <= output; i++){
+            errorOutput[i] = outputs[i] * (1.0 - outputs[i]) * (predictands[i-1] - outputs[i]);
+        }
+
+        for(int i = 0; i <= hidden; i++){
+            for(int j = 1; j <= output; j++){
+                errorSum += weightsHO[j][i] * errorOutput[j];
+            }
+
+            errorHidden[i] = hiddens[i] * (1.0 - hiddens[i]) * errorSum;
+            errorSum = 0.0;
+        }
+
+        for(int j = 1; j <= output; j++){
+            for(int i = 0; i <= hidden; i++){
+                weightsHO[j][i] += learningRate * errorOutput[j] * hiddens[i];
+            }
+        }
+
+        for(int j = 1; j <= hidden; j++){
+            for(int i = 0; i <= input; i++){
+                weightsIH[j][i] += learningRate * errorHidden[j] * inputs[i];
+            }
+        }
     }
 }
