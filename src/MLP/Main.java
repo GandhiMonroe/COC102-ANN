@@ -5,9 +5,12 @@ public class Main {
     public static void main(String[] args) {
         // TODO: Make client to enter data
 
-        // TODO: Parse data from excel to arrays
+        // Initialise data class and read data from url provided
+        Data data = new Data("/Users/bendiliberto/IdeaProjects/ANN-MLP/FresnoDataCOC102Student.csv");
+        data.Read();
 
         // TODO: Cleanse and seperate data
+
 
         Network network = new Network(5, 3, 1);
 
