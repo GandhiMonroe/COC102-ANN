@@ -4,13 +4,16 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 public class Data {
     private String url;
-    public ArrayList<String[]> rawData = new ArrayList<String[]>();
-    public ArrayList<double[]> cleanData = new ArrayList<double[]>();
+    private ArrayList<String[]> rawData = new ArrayList<String[]>();
+    private ArrayList<double[]> cleanData = new ArrayList<double[]>();
+
+    public List<double[]> trainingSet = new ArrayList<double[]>();
+    public List<double[]> validationSet = new ArrayList<double[]>();
+    public List<double[]> testSet = new ArrayList<double[]>();
 
     /**
      * Initialises data file url
@@ -59,20 +62,29 @@ public class Data {
         }
     }
 
+    /**
+     * Clean the data (remove strings, fill missing data, remove spurious data)
+     * Standardise data
+     * Split data
+     */
     public void Cleanse() {
-        String[] previousData = null;
+        String[] previousData = new String[]{"17", "1.6", "433", "100", "6"};
         double entry;
+
+        HashMap<Integer, Double> min = new HashMap<>();
+        min.put(0, 99999.9); min.put(1, 99999.9); min.put(2, 99999.9); min.put(3, 99999.9); min.put(4, 99999.9);
+        HashMap<Integer, Double> max = new HashMap<>();
+        max.put(0, 0.0); max.put(1, 0.0); max.put(2, 0.0); max.put(3, 0.0); max.put(4, 0.0);
 
         for (String[] dataEntry: rawData) {
             for(int i = 0; i < dataEntry.length; i++) {
 
                 // Replace any empty data with previous value
                 if (dataEntry[i].equals("")){
-                    if(previousData != null) {
-                        dataEntry[i] = previousData[i];
-                    }
+                    dataEntry[i] = previousData[i];
                 }
 
+                // Attempt to parse element as double, if fail take previous
                 try {
                     entry = Double.parseDouble(dataEntry[i]);
                 }
@@ -85,42 +97,93 @@ public class Data {
 
                 // Remove spurious values
                 switch (i) {
-                    case 1:
+                    case 0:
                         if(entry > 56 || Math.abs(entry - Double.parseDouble(previousData[i])) > 20 || entry < -43) {
                             dataEntry[i] = previousData[i];
+                            break;
+                        }
+                        if(entry < min.get(0)) {
+                            min.replace(0, entry);
+                        }
+                        if(entry > max.get(0)) {
+                            max.replace(0, entry);
+                        }
+                        break;
+
+                    case 1:
+                        // Fastest wind speed recorded is 253mph, probably not gonna be that fast...
+                        if(entry > 250 || entry < 0) {
+                            dataEntry[i] = previousData[i];
+                            break;
+                        }
+                        if(entry < min.get(1)) {
+                            min.replace(1, entry);
+                        }
+                        if(entry > max.get(1)) {
+                            max.replace(1, entry);
                         }
                         break;
 
                     case 2:
-                        // Fastest wind speed recorded is 253mph, probably not gonna be that fast...
-                        if(entry > 250 || entry < 0) {
+                        if(entry < 0 || entry > 500) {
                             dataEntry[i] = previousData[i];
+                            break;
                         }
+                        if(entry < min.get(2)) {
+                            min.replace(2, entry);
+                        }
+                        if(entry > max.get(2)) {
+                            max.replace(2, entry);
+                        }
+                        break;
 
                     case 3:
-                        if(entry > 0 || entry < 500) {
-                            dataEntry[i] = previousData[i];
-                        }
-
-                    case 4:
                         if(entry > 110 || entry < 90) {
                             dataEntry[i] = previousData[i];
+                            break;
                         }
+                        if(entry < min.get(3)) {
+                            min.replace(3, entry);
+                        }
+                        if(entry > max.get(3)) {
+                            max.replace(3, entry);
+                        }
+                        break;
 
-                    case 5:
+                    case 4:
                         if(entry > 100 || entry < 0) {
                             dataEntry[i] = previousData[i];
+                            break;
                         }
+                        if(entry < min.get(4)) {
+                            min.replace(4, entry);
+                        }
+                        if(entry > max.get(4)) {
+                            max.replace(4, entry);
+                        }
+                        break;
                 }
-
-                // Standardisation
-
-                // Split
             }
 
             previousData = dataEntry;
 
             cleanData.add(Arrays.stream(dataEntry).mapToDouble(Double::parseDouble).toArray());
         }
+
+        // Standardisation between 0.1 and 0.9
+        for (double[] data: cleanData) {
+            for (int i = 0; i < data.length - 1; i++) {
+                data[i] = 0.8 * (
+                            (data[i] - min.get(i)) / (max.get(i) - min.get(i))
+                        )
+                        + 0.1;
+            }
+        }
+
+        // Split
+        int split = Math.round(cleanData.size() / 5);
+        trainingSet = cleanData.subList(0, split * 3);
+        validationSet = cleanData.subList(trainingSet.size(), trainingSet.size() + split);
+        testSet = cleanData.subList(trainingSet.size() + testSet.size(), trainingSet.size() + testSet.size() + split + 1);
     }
 }

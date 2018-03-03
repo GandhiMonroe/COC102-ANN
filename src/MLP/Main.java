@@ -9,7 +9,8 @@ public class Main {
         Data data = new Data("/Users/bendiliberto/IdeaProjects/ANN-MLP/FresnoDataCOC102Student.csv");
         data.Read();
 
-        // TODO: Cleanse and seperate data
+        // Cleanse the data and split into sets
+        data.Cleanse();
 
 
         Network network = new Network(5, 3, 1);
