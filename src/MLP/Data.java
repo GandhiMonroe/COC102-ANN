@@ -72,9 +72,9 @@ public class Data {
         double entry;
 
         HashMap<Integer, Double> min = new HashMap<>();
-        min.put(0, 99999.9); min.put(1, 99999.9); min.put(2, 99999.9); min.put(3, 99999.9); min.put(4, 99999.9);
+        min.put(0, 99999.9); min.put(1, 99999.9); min.put(2, 99999.9); min.put(3, 99999.9); min.put(4, 99999.9); min.put(5, 99999.9);
         HashMap<Integer, Double> max = new HashMap<>();
-        max.put(0, 0.0); max.put(1, 0.0); max.put(2, 0.0); max.put(3, 0.0); max.put(4, 0.0);
+        max.put(0, 0.0); max.put(1, 0.0); max.put(2, 0.0); max.put(3, 0.0); max.put(4, 0.0); max.put(5, 0.0);
 
         for (String[] dataEntry: rawData) {
             for(int i = 0; i < dataEntry.length; i++) {
@@ -162,6 +162,15 @@ public class Data {
                             max.replace(4, entry);
                         }
                         break;
+
+                    case 5:
+                        if(entry < min.get(5)) {
+                            min.replace(5, entry);
+                        }
+                        if(entry > max.get(5)) {
+                            max.replace(5, entry);
+                        }
+                        break;
                 }
             }
 
@@ -172,7 +181,7 @@ public class Data {
 
         // Standardisation between 0.1 and 0.9
         for (double[] data: cleanData) {
-            for (int i = 0; i < data.length - 1; i++) {
+            for (int i = 0; i < data.length; i++) {
                 data[i] = 0.8 * (
                             (data[i] - min.get(i)) / (max.get(i) - min.get(i))
                         )

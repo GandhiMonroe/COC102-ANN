@@ -1,5 +1,9 @@
 package MLP;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -13,18 +17,35 @@ public class Main {
         data.Cleanse();
 
 
-        Network network = new Network(5, 3, 1);
+        Network network = new Network(5, 9, 1);
 
-        double[] attributes = new double[5];
-        attributes[0] = 7.4;
-        attributes[1] = 2.127;
-        attributes[2] = 121.4;
-        attributes[3] = 101.0;
-        attributes[4] = 81.0;
+        double[] result = new double[1];
+        double[] trainingAttr = new double[4];
+        double[] trainingPred = new double[1];
+        double[] completeResult = new double[2];
 
-        double[] predictand = new double[1];
-        predictand[0] = 0.8;
+        ArrayList<double[]> results = new ArrayList<double[]>();
 
-        network.trainNetwork(attributes, predictand);
+        double RMSE = 0.0;
+        double previousRMSE = 0.0;
+
+        Network selectedNetwork;
+
+        for (int j = 0; j <= 10000; j++) {
+            previousRMSE = RMSE;
+            for (int i = 0; i < data.trainingSet.size(); i++) {
+                trainingAttr = Arrays.copyOfRange(data.trainingSet.get(i), 0, data.trainingSet.get(i).length - 1);
+                trainingPred = Arrays.copyOfRange(data.trainingSet.get(i), data.trainingSet.get(i).length - 1, data.trainingSet.get(i).length);
+
+                result = network.trainNetwork(trainingAttr, trainingPred);
+
+                RMSE += Math.pow(trainingPred[0] - result[1], 2);
+            }
+            RMSE = Math.sqrt(RMSE / data.trainingSet.size());
+            if(RMSE < previousRMSE){
+                selectedNetwork = network;
+            }
+        }
+        System.console();
     }
 }
