@@ -12,6 +12,8 @@ public class Network {
 
     private double learningRate = 0.1;
 
+    private double momentum = 0.9;
+
     /**
      * Create instance of Network and initialises
      *
@@ -62,6 +64,19 @@ public class Network {
      */
     public void setLearningRate(double learningRate) {
         this.learningRate = learningRate;
+    }
+
+    /**
+     * Sets the momentum for the network
+     *
+     * @param momentum The desired momentum
+     */
+    public void setMomentum(double momentum) {
+        this.momentum = momentum;
+    }
+
+    public void boldDriver(double factor) {
+        this.learningRate = learningRate * factor;
     }
 
     /**
@@ -125,12 +140,17 @@ public class Network {
         double[] errorOutput = new double[output+1];
         double[] errorHidden = new double[hidden+1];
 
+        double[][] deltaIH = new double[hidden+1][input+1];
+        double[][] deltaHO = new double[output+1][hidden+1];
+
         double errorSum = 0.0;
 
+        // Calculate f(Sj)
         for(int i = 1; i <= output; i++){
             errorOutput[i] = outputs[i] * (1.0 - outputs[i]) * (predictands[i-1] - outputs[i]);
         }
 
+        // Calculate f(Sj)
         for(int i = 0; i <= hidden; i++){
             for(int j = 1; j <= output; j++){
                 errorSum += weightsHO[j][i] * errorOutput[j];
@@ -140,16 +160,31 @@ public class Network {
             errorSum = 0.0;
         }
 
+        // Update the weights
         for(int j = 1; j <= output; j++){
             for(int i = 0; i <= hidden; i++){
-                weightsHO[j][i] += learningRate * errorOutput[j] * hiddens[i];
+                double currentWeight = weightsHO[j][i];
+                weightsHO[j][i] += learningRate * errorOutput[j] * hiddens[i] + (momentum * deltaHO[j][i]);
+                deltaHO[j][i] = weightsHO[j][i] - currentWeight;
             }
         }
 
         for(int j = 1; j <= hidden; j++){
             for(int i = 0; i <= input; i++){
-                weightsIH[j][i] += learningRate * errorHidden[j] * inputs[i];
+                double currentWeight = weightsIH[j][i];
+                weightsIH[j][i] += learningRate * errorHidden[j] * inputs[i] + (momentum * deltaIH[j][i]);
+                deltaIH[j][i] = weightsIH[j][i] - currentWeight;
             }
         }
+    }
+
+    /**
+     * Run a forward pass on the network and return the result
+     * @param attributes The attributes used to predict
+     * @return
+     */
+    public double test(double[] attributes) {
+        double[] output = forwardPass(attributes);
+        return output[1];
     }
 }

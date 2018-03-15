@@ -15,6 +15,9 @@ public class Data {
     public List<double[]> validationSet = new ArrayList<double[]>();
     public List<double[]> testSet = new ArrayList<double[]>();
 
+    public HashMap<Integer, Double> max = new HashMap<>();
+    public HashMap<Integer, Double> min = new HashMap<>();
+
     /**
      * Initialises data file url
      *
@@ -71,9 +74,7 @@ public class Data {
         String[] previousData = new String[]{"17", "1.6", "433", "100", "6"};
         double entry;
 
-        HashMap<Integer, Double> min = new HashMap<>();
         min.put(0, 99999.9); min.put(1, 99999.9); min.put(2, 99999.9); min.put(3, 99999.9); min.put(4, 99999.9); min.put(5, 99999.9);
-        HashMap<Integer, Double> max = new HashMap<>();
         max.put(0, 0.0); max.put(1, 0.0); max.put(2, 0.0); max.put(3, 0.0); max.put(4, 0.0); max.put(5, 0.0);
 
         for (String[] dataEntry: rawData) {
@@ -125,7 +126,7 @@ public class Data {
                         break;
 
                     case 2:
-                        if(entry < 0 || entry > 500) {
+                        if(entry < 0 || entry > 800) {
                             dataEntry[i] = previousData[i];
                             break;
                         }
@@ -179,8 +180,14 @@ public class Data {
             cleanData.add(Arrays.stream(dataEntry).mapToDouble(Double::parseDouble).toArray());
         }
 
+        // Split
+        int split = Math.round(cleanData.size() / 5);
+        trainingSet = cleanData.subList(0, split * 3);
+        validationSet = cleanData.subList(trainingSet.size(), trainingSet.size() + split);
+        testSet = cleanData.subList(trainingSet.size() + validationSet.size(), trainingSet.size() + validationSet.size() + split + 1);
+
         // Standardisation between 0.1 and 0.9
-        for (double[] data: cleanData) {
+        for (double[] data: trainingSet) {
             for (int i = 0; i < data.length; i++) {
                 data[i] = 0.8 * (
                             (data[i] - min.get(i)) / (max.get(i) - min.get(i))
@@ -188,11 +195,21 @@ public class Data {
                         + 0.1;
             }
         }
-
-        // Split
-        int split = Math.round(cleanData.size() / 5);
-        trainingSet = cleanData.subList(0, split * 3);
-        validationSet = cleanData.subList(trainingSet.size(), trainingSet.size() + split);
-        testSet = cleanData.subList(trainingSet.size() + testSet.size(), trainingSet.size() + testSet.size() + split + 1);
+        for (double[] data: validationSet) {
+            for (int i = 0; i < data.length - 1; i++) {
+                data[i] = 0.8 * (
+                        (data[i] - min.get(i)) / (max.get(i) - min.get(i))
+                )
+                        + 0.1;
+            }
+        }
+        for (double[] data: testSet) {
+            for (int i = 0; i < data.length - 1; i++) {
+                data[i] = 0.8 * (
+                        (data[i] - min.get(i)) / (max.get(i) - min.get(i))
+                )
+                        + 0.1;
+            }
+        }
     }
 }
